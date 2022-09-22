@@ -24,6 +24,8 @@ Route::get("list-books", [BookController::class, "listBook"]);
 Route::group(["middleware" => ["auth:api"]], function () {
 
     Route::get("profile", [AuthorController::class, "profile"]);
+    Route::post("update", [AuthorController::class, "update"]);
+    Route::post('change-password', [AuthorController::class, 'changePassword']);
     Route::post("logout", [AuthorController::class, "logout"]);
 
     Route::post("create-book", [BookController::class, "createBook"]);

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Author;
 use Illuminate\Http\Request;
+use App\Http\Requests\shop\ChangePasswordRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
 
 class AuthorController extends Controller
 {
@@ -16,7 +19,12 @@ class AuthorController extends Controller
         $request->validate([
             "name" => "required",
             "email" => "required|email|unique:authors",
-            "password" => "required |confirmed",
+            'password' => [
+                'required',
+                'min:6',
+                'regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/',
+                'confirmed',
+            ],
             "phone_no" => "required"
         ]);
         //create data
@@ -25,6 +33,7 @@ class AuthorController extends Controller
 
         $author->name = $request->name;
         $author->email = $request->email;
+        $author->status = $request->status;
         $author->phone_no = $request->phone_no;
         $author->password = bcrypt($request->password);
 
@@ -42,17 +51,21 @@ class AuthorController extends Controller
     {
         //validation
         $login_data = $request->validate([
-            "email" => "required",
-            "password" => "required"
+            "email" => "required|string|email|max:255",
+            "password" => "required|string|min:6"
         ]);
+
         //validate author data
         if (!auth()->attempt($login_data)) {
+
             return response()->json([
                 "status" => false,
                 "message" => "Invalid Credentials"
+
             ]);
         }
-        //token
+
+     
 
         $token = auth()->user()->createToken("auth_token")->accessToken;
         //send response
@@ -60,7 +73,9 @@ class AuthorController extends Controller
         return response()->json([
             "status" => true,
             "message" => "Athour logged in successfully",
-            "access_token" => $token
+            "access_token" => $token,
+
+
         ]);
     }
 
@@ -77,6 +92,7 @@ class AuthorController extends Controller
         ]);
     }
 
+  
     //logout method get
     public function logout(Request $request)
     {
